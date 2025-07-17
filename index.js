@@ -1,53 +1,58 @@
-const yargs = require("yargs/yargs");
-const { hideBin } = require("yargs/helpers");
-const chalk = require("chalk");
+const express = require('express')
+const port  = 3000
+const chalk = require('chalk')
+const path = require('path')
+const {addNote, getNotes, removeNote, editNote} = require('./notes.controller')
 
-const {addNote, printNotes, removeNote} = require('./notes.controller')
+const app = express()
 
-const pkg = require("./package.json");
+app.set('view engine', 'ejs')
+app.set('views', 'pages')
 
-//создаем команды
+app.use(express.json())
+app.use(express.static(path.resolve(__dirname, 'public')))
+app.use(express.urlencoded({
+    extended: true
+}))
 
-yargs(hideBin(process.argv))
-    .version(pkg.version)
-    .command({
-        command: 'add',
-        describe: 'Add new note to list',
-        builder: {
-            title: {
-                type: 'string',
-                describe: 'Note title',
-                demandOption: true
-            },
-        },
-        handler({ title }) {
-            addNote(title);
-            console.log(chalk.bgGreen('Note was added!'));
-        },
+app.get('/', async (req, res) => {
+    res.render('index', {
+        title: 'Express App',
+        notes: await getNotes(),
+        created: false,
     })
-    .command({
-        command: 'list',
-        describe: 'Print all notes',
+})
 
-        async handler() {
-            printNotes()
-        },
+app.post('/', async (req, res) => {
+    await addNote(req.body.title)
+    res.render('index', {
+        title: 'Express App',
+        notes: await getNotes(),
+        created: true,
     })
-    .command({
-        command: 'remove',
-        describe: 'Remove note by id',
-        builder: {
-            id : {
-                type: 'string',
-                describe: 'Note ID',
-                demandOption: true
-            }
-        },
-        async handler({id}) {
-            await removeNote(id)
-        }
+})
+
+app.delete('/:id', async (req, res) => {
+    await removeNote(req.params.id)
+    res.render('index', {
+        title: 'Express App',
+        notes: await getNotes(),
+        created: false,
     })
-    .parse(); // команды нужно проинициализировать методом parse()
+})
 
+app.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title } = req.body;
+    await editNote(id, title);
 
+    res.render('index', {
+        title: 'Express App',
+        notes: await getNotes(),
+        created: false,
+    })
+})
 
+app.listen(port, ()=> {
+    console.log(chalk.green(`Server on port ${port} started...`))
+})

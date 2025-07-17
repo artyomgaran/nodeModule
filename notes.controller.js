@@ -46,6 +46,23 @@ async function removeNote (id) {
     console.log(chalk.red(`File: ${noteToRemove.title} | ID: ${id}`))
 }
 
+async function editNote(id, title) {
+    const notes = await getNotes();
+    const noteIndex = notes.findIndex((note) => note.id === id);
+
+    if (noteIndex === -1) {
+        throw new Error(`Note with ID ${id} not found`);
+    }
+
+    notes[noteIndex].title = title;
+    await fs.writeFile(notesPath, JSON.stringify(notes));
+
+    console.log(chalk.bgYellow('Note updated'));
+    console.log(chalk.yellow(`ID: ${id}, New title: ${title}`));
+
+
+}
+
 module.exports = {
-    addNote, printNotes, removeNote
+    addNote, getNotes, removeNote, editNote
 }
