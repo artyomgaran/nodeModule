@@ -15,7 +15,6 @@ async function addNote (title) {
     await fs.writeFile(notesPath, JSON.stringify(notes))
 }
 
-
 async function getNotes (title) {
     const notes = await fs.readFile(notesPath, {encoding : 'utf-8'})
     return Array.isArray(JSON.parse(notes)) ?  JSON.parse(notes) : []
@@ -59,10 +58,8 @@ async function editNote(id, title) {
 
     console.log(chalk.bgYellow('Note updated'));
     console.log(chalk.yellow(`ID: ${id}, New title: ${title}`));
-
-
 }
 
 module.exports = {
-    addNote, getNotes, removeNote, editNote
+    addNote, getNotes, removeNote, editNote, printNotes
 }
